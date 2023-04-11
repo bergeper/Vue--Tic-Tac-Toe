@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ShowGame from './components/ShowGame.vue';
+import StartGame from './components/StartGame.vue';
 </script>
 
 <template>
-  <ShowGame></ShowGame>
+  <StartGame></StartGame>
 </template>
 
 <style scoped></style>
