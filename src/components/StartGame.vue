@@ -4,16 +4,12 @@ import AddPlayer from './AddPlayer.vue';
 import { Player } from '../models/Player';
 import { ref } from 'vue';
 import GameBoard from './GameBoard.vue';
+import { getFromLocalStorage } from '../helpers/getPlayersFromLS';
+import { savePlayerInLS } from '../helpers/saveToLS';
 
-// showGame blir true om man hämtar data från localstorage och det finns två spelare
-const players = ref<Player[]>(
-  JSON.parse(localStorage.getItem('players') || '[]')
-);
-
-console.log(players.value);
-
-let showGame = false;
-let showInput = true;
+const playersFromLS = getFromLocalStorage();
+const players = ref<Player[]>(playersFromLS);
+const showContent = ref({ showGame: false, showInput: true });
 
 const addPlayer = (playerName: string) => {
   let id = 1;
@@ -25,21 +21,21 @@ const addPlayer = (playerName: string) => {
       id++;
       players.value.push(new Player(id, playerName, 0));
       savePlayerInLS(players.value);
+      showContent.value.showGame = true;
+      showContent.value.showInput = false;
     }
   }
 };
 
-const savePlayerInLS = (boys: Player[]) => {
-  localStorage.setItem('players', JSON.stringify(boys));
-};
-
-// defineProps;
+if (players.value.length === 2) {
+  showContent.value.showGame = true;
+  showContent.value.showInput = false;
+}
 </script>
 
 <template>
-  <AddPlayer @add-player="addPlayer" v-if="showInput"></AddPlayer>
-  <GameBoard v-if="showGame"></GameBoard>
-  <!-- Samma ska här ? -->
+  <AddPlayer @add-player="addPlayer" v-if="showContent.showInput"></AddPlayer>
+  <GameBoard v-if="showContent.showGame"></GameBoard>
   <ShowScore></ShowScore>
 </template>
 <style scoped></style>
