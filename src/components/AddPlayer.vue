@@ -2,18 +2,19 @@
 import { ref } from 'vue';
 
 const player = ref('');
+
 const playerSymbol = ref(['X', 'O']);
 
-const addPlayer = () => {
-  emits('addPlayer', player);
+const emits = defineEmits(['addPlayer']);
+
+const addPlayer = (newPlayer: string) => {
+  emits('addPlayer', newPlayer);
   player.value = '';
 };
-
-const emits = defineEmits(['addPlayer']);
 </script>
 
 <template>
-  <form @submit.prevent="addPlayer">
+  <form @submit.prevent="addPlayer(player)">
     <label>Spelare {{ playerSymbol }}: </label>
     <input placeholder="Playername" v-model="player" type="text" />
     <button type="submit">Add Player</button>

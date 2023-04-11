@@ -10,18 +10,22 @@ const players = ref<Player[]>(
   JSON.parse(localStorage.getItem('players') || '[]')
 );
 
+console.log(players.value);
+
 let showGame = false;
 let showInput = true;
 
 const addPlayer = (playerName: string) => {
   let id = 1;
-  if (players.value.length === 0) {
-    players.value.push(new Player(id, playerName, 0));
-    savePlayerInLS(players.value);
-  } else {
-    id++;
-    players.value.push(new Player(id, playerName, 0));
-    savePlayerInLS(players.value);
+  if (players.value.length <= 1) {
+    if (players.value.length === 0) {
+      players.value.push(new Player(id, playerName, 0));
+      savePlayerInLS(players.value);
+    } else {
+      id++;
+      players.value.push(new Player(id, playerName, 0));
+      savePlayerInLS(players.value);
+    }
   }
 };
 
