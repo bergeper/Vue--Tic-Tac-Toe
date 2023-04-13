@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Gameboard } from '../models/Gameboard';
+import { Game } from '../models/Game';
 
 interface IGame {
-  board: number;
-  player: number;
+  index: number;
+  game: Game;
 }
 const props = defineProps<IGame>();
 const emits = defineEmits(['toggleSquare']);
@@ -12,18 +12,17 @@ const game = ref<IGame>(props);
 </script>
 
 <template>
-  <div
-    class="gameboard__square"
-    @click.once="() => emits('toggleSquare')"
-    :class="game.player === 1 ? 'X' : '' || game.player === 2 ? 'O' : ''"
-  ></div>
+  <div class="gameboard__square" @click.once="() => emits('toggleSquare')">
+    {{ props.game.board[index] }}
+  </div>
 </template>
 
 <style scoped>
 .gameboard__square {
   width: 50px;
   height: 50px;
-  background-color: red;
-  border: 1px solid white;
+  font-size: 1.7rem;
+  background-color: rgba(27, 27, 27, 0.584);
+  border: 1px solid rgba(255, 255, 255, 0.555);
 }
 </style>
