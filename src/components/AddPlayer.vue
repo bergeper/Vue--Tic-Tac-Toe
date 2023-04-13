@@ -16,6 +16,7 @@ const addPlayer = (playerName: string) => {
 
 <template>
   <form @submit.prevent="addPlayer(player)">
+    <h3>Enter your names to begin!</h3>
     <label>Spelare {{ playerSymbol }}: </label>
     <input
       class="playerInput"
