@@ -1,3 +1,7 @@
+import { Player } from './Player';
+
 export class ActivePlayer {
-  constructor(public symbol: string, public name: string) {}
+  constructor(public player: Player, public checkForWin: string[]) {}
 }
+
+// Dont remove
