@@ -8,67 +8,115 @@ import { getFromLocalStorage } from '../helpers/getPlayersFromLS';
 import { savePlayerInLS } from '../helpers/saveToLS';
 import { Game } from '../models/Game';
 import { randomizePlayer } from '../helpers/randomizeStart';
-import { ActivePlayer } from '../models/ActivePlayer';
 import ResetGame from './ResetGame.vue';
+import ShowWinner from './ShowWinner.vue';
+import { winningCombinations } from '../helpers/winningCombinations';
 
 const playersFromLS = getFromLocalStorage();
-const showContent = ref({ showGame: false, showInput: true });
+const showContent = ref({ showGame: false, showInput: true, showBtn: false });
 
 const winner = ref(false);
 
-const players = ref<Player[]>([]);
-
 const game = ref<Game>({
+  players: [],
   board: ['', '', '', '', '', '', '', '', ''],
-  activePlayer: new ActivePlayer({ symbol: '', name: '', score: 0 }, []),
+  activePlayer: new Player('', '', [], 0),
   isGameDone: false,
 });
 
 if (playersFromLS.length === 2) {
-  players.value.push(...playersFromLS);
-  const playerToStart = randomizePlayer(players.value[0], players.value[1]);
-  game.value.activePlayer.player = playerToStart;
+  game.value.players.push(...playersFromLS);
+  const playerToStart = randomizePlayer(
+    game.value.players[0],
+    game.value.players[1]
+  );
+  game.value.activePlayer = playerToStart;
   showContent.value.showGame = true;
+  showContent.value.showBtn = true;
   showContent.value.showInput = false;
 }
 
 const addPlayer = (playerName: string) => {
-  if (players.value.length <= 1) {
-    if (players.value.length === 0) {
-      players.value.push(new Player('X', playerName, 0));
-      savePlayerInLS(players.value);
+  if (game.value.players.length <= 1) {
+    if (game.value.players.length === 0) {
+      game.value.players.push(new Player('X', playerName, [], 0));
+      savePlayerInLS(game.value.players);
     } else {
-      players.value.push(new Player('O', playerName, 0));
-      savePlayerInLS(players.value);
+      game.value.players.push(new Player('O', playerName, [], 0));
+      savePlayerInLS(game.value.players);
       showContent.value.showGame = true;
+      showContent.value.showBtn = true;
       showContent.value.showInput = false;
-      const playerToStart = randomizePlayer(players.value[0], players.value[1]);
-      game.value.activePlayer.player = playerToStart;
+      const playerToStart = randomizePlayer(
+        game.value.players[0],
+        game.value.players[1]
+      );
+      game.value.activePlayer = playerToStart;
     }
   }
 };
 
 const playerMove = (i: number) => {
-  if (game.value.activePlayer.player == players.value[0]) {
-    game.value.board[i] = game.value.activePlayer.player.symbol;
-    console.log(game.value.activePlayer);
-    game.value.activePlayer.player = players.value[1];
-  } else {
-    game.value.board[i] = game.value.activePlayer.player.symbol;
-    console.log(game.value.activePlayer);
-    game.value.activePlayer.player = players.value[0];
+  if (!winner.value) {
+    game.value.board[i] = game.value.activePlayer.symbol;
   }
 };
 
-const checkForWinner = () => {};
+const addPositionForMove = () => {
+  if (!winner.value) {
+    let position = 0;
+    for (let i = 0; i < game.value.board.length; i++) {
+      if (game.value.board[i] === game.value.activePlayer.symbol) {
+        position = i;
+        if (!game.value.activePlayer.checkForWin.includes(position)) {
+          game.value.activePlayer.checkForWin.push(position);
+          console.log(game.value);
+        }
+      }
+    }
+  }
+};
+
+const winningCombos = () => {
+  if (!winner.value) {
+    for (let i = 0; i < winningCombinations.length; i++) {
+      let checkForWin = winningCombinations[i].every((element) =>
+        game.value.activePlayer.checkForWin.includes(element)
+      );
+
+      if (checkForWin) {
+        game.value.isGameDone = true;
+        showContent.value.showGame = false;
+        game.value.activePlayer.score += 1;
+        for (let i = 0; i < game.value.players.length; i++) {
+          game.value.players[i].checkForWin = [];
+        }
+        savePlayerInLS(game.value.players);
+        winner.value = true;
+        console.log(game.value.isGameDone);
+        console.log(winner.value);
+      }
+    }
+  }
+};
+
+const changePlayer = () => {
+  if (!winner.value) {
+    if (game.value.activePlayer == game.value.players[1]) {
+      game.value.activePlayer = game.value.players[0];
+    } else {
+      game.value.activePlayer = game.value.players[1];
+    }
+  }
+};
 </script>
 
 <template>
   <AddPlayer @add-player="addPlayer" v-if="showContent.showInput"></AddPlayer>
-  <div v-if="showContent.showGame" class="container">
+  <div v-if="showContent.showGame" class="game--container">
     <h3>
-      Player-{{ game.activePlayer.player.symbol }}:
-      {{ game.activePlayer.player.name }}
+      Player-{{ game.activePlayer.symbol }}:
+      {{ game.activePlayer.name }}
     </h3>
     <div class="gameboard">
       <GameBoard
@@ -76,19 +124,31 @@ const checkForWinner = () => {};
         :game="game"
         v-for="(board, index) in game.board"
         :key="index"
-        @player-move="playerMove(index)"
+        @markSquare="playerMove(index)"
+        @check-for-win="addPositionForMove"
+        @winning-combo="winningCombos"
+        @change-player="changePlayer"
       ></GameBoard>
     </div>
-    <ShowScore></ShowScore>
+  </div>
+  <div class="game--container">
+    <ShowWinner v-if="game.isGameDone" :winner="game.activePlayer">
+    </ShowWinner>
+    <ShowScore :score-players="game.players"></ShowScore>
     <ResetGame></ResetGame>
+    <div v-if="showContent.showBtn" class="btn--container"></div>
   </div>
 </template>
 <style scoped lang="scss">
-.container {
+.game--container {
   display: flex;
   flex-direction: column;
 }
 
+.btn--container {
+  display: flex;
+  flex-direction: column;
+}
 .X {
   background-color: green;
 }

@@ -7,11 +7,24 @@ interface IGame {
   game: Game;
 }
 const props = defineProps<IGame>();
-const emits = defineEmits(['playerMove']);
+const emits = defineEmits([
+  'changePlayer',
+  'markSquare',
+  'checkForWin',
+  'winningCombo',
+]);
 </script>
 
 <template>
-  <div class="gameboard__square" @click.once="() => emits('playerMove')">
+  <div
+    class="gameboard__square"
+    @click.once="
+      emits('markSquare'),
+        emits('checkForWin'),
+        emits('winningCombo'),
+        emits('changePlayer')
+    "
+  >
     {{ props.game.board[index] }}
   </div>
 </template>
