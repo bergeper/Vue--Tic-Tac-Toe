@@ -15,8 +15,6 @@ import { winningCombinations } from '../helpers/winningCombinations';
 const playersFromLS = getFromLocalStorage();
 const showContent = ref({ showGame: false, showInput: true, showBtn: false });
 
-const winner = ref(false);
-
 const game = ref<Game>({
   players: [],
   board: ['', '', '', '', '', '', '', '', ''],
@@ -35,6 +33,17 @@ if (playersFromLS.length === 2) {
   showContent.value.showBtn = true;
   showContent.value.showInput = false;
 }
+
+const newGame = (playAgain: boolean) => {
+  game.value.isGameDone = playAgain;
+  const playerToStart = randomizePlayer(
+    game.value.players[0],
+    game.value.players[1]
+  );
+  game.value.board = ['', '', '', '', '', '', '', '', ''];
+  game.value.activePlayer = playerToStart;
+  showContent.value.showGame = true;
+};
 
 const addPlayer = (playerName: string) => {
   if (game.value.players.length <= 1) {
@@ -57,28 +66,24 @@ const addPlayer = (playerName: string) => {
 };
 
 const playerMove = (i: number) => {
-  if (!winner.value) {
-    game.value.board[i] = game.value.activePlayer.symbol;
-  }
+  game.value.board[i] = game.value.activePlayer.symbol;
 };
 
 const addPositionForMove = () => {
-  if (!winner.value) {
-    let position = 0;
-    for (let i = 0; i < game.value.board.length; i++) {
-      if (game.value.board[i] === game.value.activePlayer.symbol) {
-        position = i;
-        if (!game.value.activePlayer.checkForWin.includes(position)) {
-          game.value.activePlayer.checkForWin.push(position);
-          console.log(game.value);
-        }
+  let position = 0;
+  for (let i = 0; i < game.value.board.length; i++) {
+    if (game.value.board[i] === game.value.activePlayer.symbol) {
+      position = i;
+      if (!game.value.activePlayer.checkForWin.includes(position)) {
+        game.value.activePlayer.checkForWin.push(position);
+        console.log(game.value);
       }
     }
   }
 };
 
 const winningCombos = () => {
-  if (!winner.value) {
+  if (!game.value.isGameDone) {
     for (let i = 0; i < winningCombinations.length; i++) {
       let checkForWin = winningCombinations[i].every((element) =>
         game.value.activePlayer.checkForWin.includes(element)
@@ -92,16 +97,13 @@ const winningCombos = () => {
           game.value.players[i].checkForWin = [];
         }
         savePlayerInLS(game.value.players);
-        winner.value = true;
-        console.log(game.value.isGameDone);
-        console.log(winner.value);
       }
     }
   }
 };
 
 const changePlayer = () => {
-  if (!winner.value) {
+  if (!game.value.isGameDone) {
     if (game.value.activePlayer == game.value.players[1]) {
       game.value.activePlayer = game.value.players[0];
     } else {
@@ -113,7 +115,7 @@ const changePlayer = () => {
 
 <template>
   <AddPlayer @add-player="addPlayer" v-if="showContent.showInput"></AddPlayer>
-  <div v-if="showContent.showGame" class="game--container">
+  <div v-if="showContent.showGame" class="container">
     <h3>
       Player-{{ game.activePlayer.symbol }}:
       {{ game.activePlayer.name }}
@@ -131,8 +133,12 @@ const changePlayer = () => {
       ></GameBoard>
     </div>
   </div>
-  <div class="game--container">
-    <ShowWinner v-if="game.isGameDone" :winner="game.activePlayer">
+  <div class="container">
+    <ShowWinner
+      v-if="game.isGameDone"
+      :winner="game.activePlayer"
+      @new-game="newGame"
+    >
     </ShowWinner>
     <ShowScore :score-players="game.players"></ShowScore>
     <ResetGame></ResetGame>
@@ -140,7 +146,7 @@ const changePlayer = () => {
   </div>
 </template>
 <style scoped lang="scss">
-.game--container {
+.container {
   display: flex;
   flex-direction: column;
 }
