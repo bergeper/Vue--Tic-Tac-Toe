@@ -8,6 +8,8 @@ import { getFromLocalStorage } from '../helpers/getPlayersFromLS';
 import { savePlayerInLS } from '../helpers/saveToLS';
 import { Game } from '../models/Game';
 import { randomizePlayer } from '../helpers/randomizeStart';
+import { ActivePlayer } from '../models/ActivePlayer';
+import ResetGame from './ResetGame.vue';
 
 const playersFromLS = getFromLocalStorage();
 const showContent = ref({ showGame: false, showInput: true });
@@ -15,7 +17,7 @@ const showContent = ref({ showGame: false, showInput: true });
 const game = ref<Game>({
   players: [],
   board: ['', '', '', '', '', '', '', '', ''],
-  activePlayer: new Player('', '', 0),
+  activePlayer: new ActivePlayer('', ''),
   isGameDone: false,
 });
 
@@ -75,10 +77,11 @@ const markSquare = (i: number) => {
         @toggle-square="markSquare(index)"
       ></GameBoard>
     </div>
+    <ResetGame></ResetGame>
+    <ShowScore></ShowScore>
   </div>
-  <ShowScore></ShowScore>
 </template>
-<style scoped>
+<style scoped lang="scss">
 .X {
   background-color: green;
 }

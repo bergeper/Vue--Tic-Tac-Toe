@@ -17,7 +17,7 @@ const addPlayer = (playerName: string) => {
 <template>
   <form @submit.prevent="addPlayer(player)">
     <h3>Enter your names to begin!</h3>
-    <label>Spelare {{ playerSymbol }}: </label>
+    <label>Player - {{ playerSymbol }}: </label>
     <input
       class="playerInput"
       placeholder="Playername"
@@ -28,7 +28,7 @@ const addPlayer = (playerName: string) => {
   </form>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .playerInput {
   border-radius: 8px;
   border: 1px solid transparent;

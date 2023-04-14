@@ -8,7 +8,6 @@ interface IGame {
 }
 const props = defineProps<IGame>();
 const emits = defineEmits(['toggleSquare']);
-const game = ref<IGame>(props);
 </script>
 
 <template>
@@ -17,7 +16,7 @@ const game = ref<IGame>(props);
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .gameboard__square {
   width: 50px;
   height: 50px;
