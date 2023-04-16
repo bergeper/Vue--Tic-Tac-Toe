@@ -2,7 +2,7 @@
 import ShowScore from './ShowScore.vue';
 import AddPlayer from './AddPlayer.vue';
 import { Player } from '../models/Player';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import GameBoard from './GameBoard.vue';
 import { getFromLocalStorage } from '../helpers/getPlayersFromLS';
 import { savePlayerInLS } from '../helpers/saveToLS';
@@ -13,13 +13,18 @@ import ShowWinner from './ShowWinner.vue';
 import { winningCombinations } from '../helpers/winningCombinations';
 
 const playersFromLS = getFromLocalStorage();
-const showContent = ref({ showGame: false, showInput: true, showBtn: false });
+
+const showContent = reactive({
+  showGame: false,
+  showInput: true,
+  showBtn: false,
+});
+const isGameOver = reactive({ moves: 0, win: false, tie: false });
 
 const game = ref<Game>({
   players: [],
   board: ['', '', '', '', '', '', '', '', ''],
   activePlayer: new Player('', '', [], 0),
-  isGameDone: false,
 });
 
 if (playersFromLS.length === 2) {
@@ -29,20 +34,21 @@ if (playersFromLS.length === 2) {
     game.value.players[1]
   );
   game.value.activePlayer = playerToStart;
-  showContent.value.showGame = true;
-  showContent.value.showBtn = true;
-  showContent.value.showInput = false;
+  showContent.showGame = true;
+  showContent.showBtn = true;
+  showContent.showInput = false;
 }
 
 const newGame = (playAgain: boolean) => {
-  game.value.isGameDone = playAgain;
+  isGameOver.win = playAgain;
   const playerToStart = randomizePlayer(
     game.value.players[0],
     game.value.players[1]
   );
   game.value.board = ['', '', '', '', '', '', '', '', ''];
+  isGameOver.moves = 0;
   game.value.activePlayer = playerToStart;
-  showContent.value.showGame = true;
+  showContent.showGame = true;
 };
 
 const addPlayer = (playerName: string) => {
@@ -53,9 +59,9 @@ const addPlayer = (playerName: string) => {
     } else {
       game.value.players.push(new Player('O', playerName, [], 0));
       savePlayerInLS(game.value.players);
-      showContent.value.showGame = true;
-      showContent.value.showBtn = true;
-      showContent.value.showInput = false;
+      showContent.showGame = true;
+      showContent.showBtn = true;
+      showContent.showInput = false;
       const playerToStart = randomizePlayer(
         game.value.players[0],
         game.value.players[1]
@@ -67,6 +73,7 @@ const addPlayer = (playerName: string) => {
 
 const playerMove = (i: number) => {
   game.value.board[i] = game.value.activePlayer.symbol;
+  isGameOver.moves += 1;
 };
 
 const addPositionForMove = () => {
@@ -76,34 +83,36 @@ const addPositionForMove = () => {
       position = i;
       if (!game.value.activePlayer.checkForWin.includes(position)) {
         game.value.activePlayer.checkForWin.push(position);
-        console.log(game.value);
       }
     }
   }
 };
 
 const winningCombos = () => {
-  if (!game.value.isGameDone) {
+  if (!isGameOver.win && isGameOver.moves <= 9) {
+    console.log(isGameOver.moves);
     for (let i = 0; i < winningCombinations.length; i++) {
       let checkForWin = winningCombinations[i].every((element) =>
         game.value.activePlayer.checkForWin.includes(element)
       );
 
       if (checkForWin) {
-        game.value.isGameDone = true;
-        showContent.value.showGame = false;
+        isGameOver.win = true;
+        showContent.showGame = false;
         game.value.activePlayer.score += 1;
         for (let i = 0; i < game.value.players.length; i++) {
           game.value.players[i].checkForWin = [];
         }
         savePlayerInLS(game.value.players);
+      } else {
+        isGameOver.tie = true;
       }
     }
   }
 };
 
 const changePlayer = () => {
-  if (!game.value.isGameDone) {
+  if (!isGameOver.win) {
     if (game.value.activePlayer == game.value.players[1]) {
       game.value.activePlayer = game.value.players[0];
     } else {
@@ -135,7 +144,7 @@ const changePlayer = () => {
   </div>
   <div class="container">
     <ShowWinner
-      v-if="game.isGameDone"
+      v-if="isGameOver.win"
       :winner="game.activePlayer"
       @new-game="newGame"
     >
