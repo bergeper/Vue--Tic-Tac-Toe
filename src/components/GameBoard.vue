@@ -12,6 +12,7 @@ const emits = defineEmits([
   'markSquare',
   'checkForWin',
   'winningCombo',
+  'checkForTie',
 ]);
 </script>
 
@@ -22,7 +23,8 @@ const emits = defineEmits([
       emits('markSquare'),
         emits('checkForWin'),
         emits('winningCombo'),
-        emits('changePlayer')
+        emits('changePlayer');
+      emits('checkForTie');
     "
   >
     {{ props.game.board[index] }}

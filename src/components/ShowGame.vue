@@ -107,15 +107,18 @@ const winningCombos = () => {
         }
         gameToLS(game.value);
       }
-      if (game.value.moves === 9 && game.value.win === false) {
-        game.value.tie = true;
-        showContent.showGame = false;
-        for (let i = 0; i < game.value.players.length; i++) {
-          game.value.players[i].checkForWin = [];
-        }
-        gameToLS(game.value);
-      }
     }
+  }
+};
+
+const checkForTie = () => {
+  if (game.value.moves === 9 && game.value.win === false) {
+    game.value.tie = true;
+    showContent.showGame = false;
+    for (let i = 0; i < game.value.players.length; i++) {
+      game.value.players[i].checkForWin = [];
+    }
+    gameToLS(game.value);
   }
 };
 
@@ -162,6 +165,7 @@ const resetGame = () => {
         @markSquare="playerMove(index)"
         @check-for-win="addPositionForMove"
         @winning-combo="winningCombos"
+        @check-for-tie="checkForTie"
         @change-player="changePlayer"
       ></GameBoard>
     </div>

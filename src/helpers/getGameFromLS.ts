@@ -14,6 +14,7 @@ export function getGameLocalStorage(): Game {
       win: false,
       tie: false,
     };
+  } else {
+    return gameFromLS;
   }
-  return gameFromLS;
 }
