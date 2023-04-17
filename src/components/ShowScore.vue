@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { Player } from '../models/Player';
 
-interface IPlayer {
-  scorePlayers: Player[];
+interface IShowContent {
+  showGame: boolean;
+  showInput: boolean;
+  showBtn: boolean;
 }
 
-const props = defineProps<IPlayer>();
+interface IPlayer {
+  scorePlayers: Player[];
+  showContent: IShowContent;
+}
+
+//const players = defineProps<IPlayer>();
+//const emits = defineEmits(['hideGame']);
+
+const showScore = () => {
+  console.log(1);
+};
 </script>
 
 <template>
-  <div>{{}}</div>
-  <button>Show Score</button>
+  <table></table>
+
+  <button @click="showScore">Show Score</button>
 </template>
 
 <style scoped lang="scss"></style>
