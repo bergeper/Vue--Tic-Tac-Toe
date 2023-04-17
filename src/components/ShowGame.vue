@@ -19,9 +19,6 @@ const showContent = reactive({
   showBtn: false,
 });
 
-// keep this state
-// const isGameOver = reactive({ moves: 0, win: false, tie: false });
-
 const game = ref<Game>(getGameLocalStorage());
 
 if (gameFromLS.players.length === 2) {
