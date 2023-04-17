@@ -1,5 +1,5 @@
-import { Player } from '../models/Player';
+import { Game } from '../models/Game';
 
-export const savePlayerInLS = (playersToLS: Player[]) => {
-  localStorage.setItem('players', JSON.stringify(playersToLS));
+export const gameToLS = (gameToLS: Game) => {
+  localStorage.setItem('game', JSON.stringify(gameToLS));
 };
