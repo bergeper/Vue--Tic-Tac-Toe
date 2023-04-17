@@ -121,11 +121,12 @@ const checkForTie = () => {
 
 const changePlayer = () => {
   if (!game.value.win) {
-    if (game.value.activePlayer === game.value.players[0]) {
-      console.log(11);
+    if (
+      game.value.players[0].checkForWin.length >
+      game.value.players[1].checkForWin.length
+    ) {
       game.value.activePlayer = game.value.players[1];
     } else {
-      console.log(12);
       game.value.activePlayer = game.value.players[0];
     }
     gameToLS(game.value);
