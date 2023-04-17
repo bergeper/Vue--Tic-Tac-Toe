@@ -34,7 +34,10 @@ const emits = defineEmits([
   width: 50px;
   height: 50px;
   font-size: 1.7rem;
-  background-color: rgba(27, 27, 27, 0.584);
+  background-color: rgba(251, 251, 251, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.555);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>

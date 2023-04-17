@@ -149,7 +149,7 @@ const resetGame = () => {
 <template>
   <AddPlayer @add-player="addPlayer" v-if="showContent.showInput"></AddPlayer>
   <div v-if="showContent.showGame" class="container">
-    <h3>
+    <h3 class="player">
       Player-{{ game.activePlayer.symbol }}:
       {{ game.activePlayer.name }}
     </h3>
@@ -166,40 +166,46 @@ const resetGame = () => {
       ></GameBoard>
     </div>
   </div>
-  <div class="container">
+  <div class="container" v-if="game.win || game.tie">
     <ShowWinner
-      v-if="game.win || game.tie"
       :winner="game.activePlayer.name"
       :is-game-over="game"
       :players="game.players"
       @new-game="newGame"
     >
     </ShowWinner>
-    <div v-if="showContent.showBtn" class="btn--container">
-      <ResetGame @reset-game="resetGame"></ResetGame>
-    </div>
+  </div>
+  <div v-if="showContent.showBtn" class="btn--container">
+    <ResetGame @reset-game="resetGame"></ResetGame>
   </div>
 </template>
 <style scoped lang="scss">
+.player {
+  padding: 20px;
+  background-color: rgba(200, 134, 220, 0.781);
+  border-radius: 10px;
+  margin: 20px;
+}
 .container {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  background-color: rgb(80, 104, 200);
+  border-radius: 20px;
+  padding: 20px;
+  min-width: 300px;
 }
 
 .btn--container {
   display: flex;
   flex-direction: column;
-}
-.X {
-  background-color: green;
+  padding: 20px;
 }
 
-.O {
-  background-color: blueviolet;
-}
 .gameboard {
-  margin: 10px;
+  margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  text-align: center;
 }
 </style>
