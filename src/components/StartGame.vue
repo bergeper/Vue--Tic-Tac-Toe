@@ -1,64 +1,64 @@
 <script setup lang="ts">
-import ShowScore from './ShowScore.vue';
 import AddPlayer from './AddPlayer.vue';
 import { Player } from '../models/Player';
 import { reactive, ref } from 'vue';
 import GameBoard from './GameBoard.vue';
-import { getFromLocalStorage } from '../helpers/getPlayersFromLS';
-import { savePlayerInLS } from '../helpers/saveToLS';
+import { gameToLS } from '../helpers/saveToLS';
 import { Game } from '../models/Game';
 import { randomizePlayer } from '../helpers/randomizeStart';
 import ResetGame from './ResetGame.vue';
 import ShowWinner from './ShowWinner.vue';
 import { winningCombinations } from '../helpers/winningCombinations';
+import { getGameLocalStorage } from '../helpers/getGameFromLS';
 
-const playersFromLS = getFromLocalStorage();
+const gameFromLS = getGameLocalStorage();
 
 const showContent = reactive({
   showGame: false,
   showInput: true,
   showBtn: false,
 });
-const isGameOver = reactive({ moves: 0, win: false, tie: false });
 
-const game = ref<Game>({
-  players: [],
-  board: ['', '', '', '', '', '', '', '', ''],
-  activePlayer: new Player('', '', [], 0),
-});
+// keep this state
+// const isGameOver = reactive({ moves: 0, win: false, tie: false });
 
-if (playersFromLS.length === 2) {
-  game.value.players.push(...playersFromLS);
-  const playerToStart = randomizePlayer(
-    game.value.players[0],
-    game.value.players[1]
-  );
-  game.value.activePlayer = playerToStart;
+const game = ref<Game>(getGameLocalStorage());
+
+if (gameFromLS.players.length === 2) {
   showContent.showGame = true;
   showContent.showBtn = true;
   showContent.showInput = false;
+  if (
+    game.value.players[0].checkForWin.length <
+    game.value.players[1].checkForWin.length
+  ) {
+    game.value.activePlayer = game.value.players[0];
+  } else {
+    game.value.activePlayer = game.value.players[1];
+  }
 }
 
 const newGame = (playAgain: boolean) => {
-  isGameOver.win = playAgain;
+  game.value.win = playAgain;
+  game.value.tie = playAgain;
+  game.value.moves = 0;
+  game.value.board = ['', '', '', '', '', '', '', '', ''];
+  game.value.activePlayer = new Player('', '', [], 0);
   const playerToStart = randomizePlayer(
     game.value.players[0],
     game.value.players[1]
   );
-  game.value.board = ['', '', '', '', '', '', '', '', ''];
-  isGameOver.moves = 0;
   game.value.activePlayer = playerToStart;
   showContent.showGame = true;
+  gameToLS(game.value);
 };
 
 const addPlayer = (playerName: string) => {
   if (game.value.players.length <= 1) {
     if (game.value.players.length === 0) {
       game.value.players.push(new Player('X', playerName, [], 0));
-      savePlayerInLS(game.value.players);
     } else {
       game.value.players.push(new Player('O', playerName, [], 0));
-      savePlayerInLS(game.value.players);
       showContent.showGame = true;
       showContent.showBtn = true;
       showContent.showInput = false;
@@ -68,12 +68,14 @@ const addPlayer = (playerName: string) => {
       );
       game.value.activePlayer = playerToStart;
     }
+    gameToLS(game.value);
   }
 };
 
 const playerMove = (i: number) => {
   game.value.board[i] = game.value.activePlayer.symbol;
-  isGameOver.moves += 1;
+  game.value.moves += 1;
+  gameToLS(game.value);
 };
 
 const addPositionForMove = () => {
@@ -83,42 +85,64 @@ const addPositionForMove = () => {
       position = i;
       if (!game.value.activePlayer.checkForWin.includes(position)) {
         game.value.activePlayer.checkForWin.push(position);
+        gameToLS(game.value);
       }
     }
   }
 };
 
 const winningCombos = () => {
-  if (!isGameOver.win && isGameOver.moves <= 9) {
-    console.log(isGameOver.moves);
+  if (!game.value.win && game.value.moves <= 9) {
     for (let i = 0; i < winningCombinations.length; i++) {
       let checkForWin = winningCombinations[i].every((element) =>
         game.value.activePlayer.checkForWin.includes(element)
       );
 
       if (checkForWin) {
-        isGameOver.win = true;
+        game.value.win = true;
         showContent.showGame = false;
         game.value.activePlayer.score += 1;
         for (let i = 0; i < game.value.players.length; i++) {
           game.value.players[i].checkForWin = [];
         }
-        savePlayerInLS(game.value.players);
-      } else {
-        isGameOver.tie = true;
+        gameToLS(game.value);
+      }
+      if (game.value.moves === 9 && game.value.win === false) {
+        game.value.tie = true;
+        showContent.showGame = false;
+        for (let i = 0; i < game.value.players.length; i++) {
+          game.value.players[i].checkForWin = [];
+        }
+        gameToLS(game.value);
       }
     }
   }
 };
 
 const changePlayer = () => {
-  if (!isGameOver.win) {
-    if (game.value.activePlayer == game.value.players[1]) {
-      game.value.activePlayer = game.value.players[0];
-    } else {
+  if (!game.value.win) {
+    if (game.value.activePlayer === game.value.players[0]) {
+      console.log(11);
       game.value.activePlayer = game.value.players[1];
+    } else {
+      console.log(12);
+      game.value.activePlayer = game.value.players[0];
     }
+    gameToLS(game.value);
   }
+};
+
+const resetGame = () => {
+  localStorage.clear();
+  game.value.activePlayer = new Player('', '', [], 0);
+  game.value.players = [];
+  game.value.board = game.value.board = ['', '', '', '', '', '', '', '', ''];
+  game.value.moves = 0;
+  game.value.tie = false;
+  game.value.win = false;
+  showContent.showGame = false;
+  showContent.showInput = true;
+  showContent.showBtn = false;
 };
 </script>
 
@@ -144,14 +168,16 @@ const changePlayer = () => {
   </div>
   <div class="container">
     <ShowWinner
-      v-if="isGameOver.win"
-      :winner="game.activePlayer"
+      v-if="game.win || game.tie"
+      :winner="game.activePlayer.name"
+      :is-game-over="game"
+      :players="game.players"
       @new-game="newGame"
     >
     </ShowWinner>
-    <ShowScore :score-players="game.players"></ShowScore>
-    <ResetGame></ResetGame>
-    <div v-if="showContent.showBtn" class="btn--container"></div>
+    <div v-if="showContent.showBtn" class="btn--container">
+      <ResetGame @reset-game="resetGame"></ResetGame>
+    </div>
   </div>
 </template>
 <style scoped lang="scss">
